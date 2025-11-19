@@ -182,6 +182,50 @@ Remember: You're not just a tutor, you're ${selectedMember} from TXT helping you
         const data = await response.json();
         return data.choices[0].message.content;
     }
+    
+    async getChatResponse(userMessage, questionText, options, correctAnswer, explanation) {
+        if (!this.apiKey) {
+            throw new Error('OpenAI API key not configured');
+        }
+
+        try {
+            const systemPrompt = this.getSystemPrompt();
+            const userPrompt = `
+Context: Claire is asking about this AP Biology question:
+Question: ${questionText}
+Options: A) ${options.A}, B) ${options.B}, C) ${options.C}, D) ${options.D}
+Correct Answer: ${correctAnswer}
+Explanation: ${explanation}
+
+Claire's question: "${userMessage}"
+
+Please respond as the TXT member helping Claire understand this concept. Be encouraging, educational, and maintain your K-pop idol personality!`;
+
+            const messages = [
+                { role: 'system', content: systemPrompt },
+                ...this.conversationHistory,
+                { role: 'user', content: userPrompt }
+            ];
+            
+            const aiResponse = await this.makeAPICall(messages, 0.8);
+
+            // Update conversation history
+            this.conversationHistory.push(
+                { role: 'user', content: userMessage },
+                { role: 'assistant', content: aiResponse }
+            );
+
+            // Keep conversation history limited
+            if (this.conversationHistory.length > 10) {
+                this.conversationHistory = this.conversationHistory.slice(-10);
+            }
+
+            return aiResponse;
+        } catch (error) {
+            console.error('OpenAI API Error:', error);
+            throw error;
+        }
+    }
 }
 
 // Export for use in main script

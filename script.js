@@ -94,6 +94,18 @@ class QuizApp {
         this.restartBtn.addEventListener('click', () => this.restartQuiz());
         this.closeModal.addEventListener('click', () => this.closeResults());
         
+        // Reset progress button
+        const resetProgressBtn = document.getElementById('resetProgressBtn');
+        if (resetProgressBtn) {
+            resetProgressBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to reset all your progress? This will mark all questions as unsolved and reset difficulty levels.')) {
+                    this.resetProgress();
+                    // Show feedback
+                    this.addChatMessage('Hueningkai', 'Progress reset! Let\'s start fresh with new energy! 🌈');
+                }
+            });
+        }
+        
         // New chat-based AI help
         const askTXTBtn = document.getElementById('askTXTBtn');
         if (askTXTBtn) {
@@ -391,7 +403,7 @@ class QuizApp {
 
     startQuiz() {
         // Optimal quiz length for engagement (game theory)
-        const OPTIMAL_QUIZ_LENGTH = 6; // Sweet spot between 5-7 questions
+        const OPTIMAL_QUIZ_LENGTH = 6; // Sweet spot for engagement
         
         // Build the quiz pool with progressive difficulty
         this.availableQuestions = this.selectQuestionsWithProgression(OPTIMAL_QUIZ_LENGTH);
@@ -408,11 +420,21 @@ class QuizApp {
         this.score = 0;
         this.wrongAnswers = []; // Reset wrong answers
         
+        // Show overall progress
+        const totalQuestions = this.questions.length;
+        const solvedCount = this.solvedQuestions.length;
+        const progressPercent = Math.round((solvedCount / totalQuestions) * 100);
+        
         // Add a welcome message if available
         if (encouragingMessages.welcome && encouragingMessages.welcome.length > 0) {
             const welcomeMsg = encouragingMessages.welcome[Math.floor(Math.random() * encouragingMessages.welcome.length)];
             this.addChatMessage(welcomeMsg.member, welcomeMsg.message);
         }
+        
+        // Show overall progress
+        this.addChatMessage('Beomgyu', 
+            `Overall progress: ${solvedCount}/${totalQuestions} questions mastered (${progressPercent}%) 📊`
+        );
         
         // Show quiz composition with difficulty info
         const difficultyComposition = this.getDifficultyComposition();
@@ -646,13 +668,14 @@ class QuizApp {
         // Clear answer mapping for new question
         this.answerMapping = null;
         
-        // Clear chat for new question (keep welcome message)
-        const messages = this.chatContainer.querySelectorAll('.chat-message');
-        if (messages.length > 1) {
-            for (let i = messages.length - 1; i > 0; i--) {
-                messages[i].remove();
-            }
-        }
+        // Don't clear chat messages - keep conversation history
+        // Users want to see their conversation with TXT members
+        // const messages = this.chatContainer.querySelectorAll('.chat-message');
+        // if (messages.length > 1) {
+        //     for (let i = messages.length - 1; i > 0; i--) {
+        //         messages[i].remove();
+        //     }
+        // }
         
         this.showQuestion();
     }
@@ -1350,7 +1373,7 @@ class QuizApp {
         this.resultsModal.classList.add('hidden');
         
         // Optimal quiz length for engagement (game theory)
-        const OPTIMAL_QUIZ_LENGTH = 6; // Sweet spot between 5-7 questions
+        const OPTIMAL_QUIZ_LENGTH = 6; // Sweet spot for engagement
         
         // Build the quiz pool with progressive difficulty
         this.availableQuestions = this.selectQuestionsWithProgression(OPTIMAL_QUIZ_LENGTH);
@@ -1369,13 +1392,13 @@ class QuizApp {
         this.currentMemberIndex = 0;
         this.wrongAnswers = []; // Reset wrong answers
         
-        // Clear chat except welcome message
-        const messages = this.chatContainer.querySelectorAll('.chat-message');
-        if (messages.length > 1) {
-            for (let i = messages.length - 1; i > 0; i--) {
-                messages[i].remove();
-            }
-        }
+        // Don't clear chat on restart - keep conversation history
+        // const messages = this.chatContainer.querySelectorAll('.chat-message');
+        // if (messages.length > 1) {
+        //     for (let i = messages.length - 1; i > 0; i--) {
+        //         messages[i].remove();
+        //     }
+        // }
         
         // Show the answer section
         this.answerSection.classList.remove('hidden');
@@ -1394,9 +1417,26 @@ class QuizApp {
         const selectedQuestions = [];
         const wrongQuestionIds = this.loadWrongQuestions();
         
-        // Group questions by topic and difficulty
+        // Filter out already solved questions from the pool
+        const availablePool = this.questions.filter(q => 
+            !this.solvedQuestions.includes(this.getQuestionId(q))
+        );
+        
+        // If all questions have been solved, offer to reset progress
+        if (availablePool.length === 0) {
+            this.addChatMessage('Soobin', 
+                'Amazing! You\'ve completed all questions! 🎉 Click the reset button to practice again.'
+            );
+            this.showResetButton();
+            return [];
+        }
+        
+        // If fewer questions available than target, adjust target
+        const actualTarget = Math.min(targetLength, availablePool.length);
+        
+        // Group available questions by topic and difficulty
         const questionsByTopicAndDifficulty = {};
-        this.questions.forEach(q => {
+        availablePool.forEach(q => {
             const topic = q.topic || 'General Cellular Respiration';
             const difficulty = q.difficulty || 'Medium';
             
@@ -1413,53 +1453,63 @@ class QuizApp {
         // Get unique topics
         const topics = Object.keys(questionsByTopicAndDifficulty);
         
-        // Select questions with progressive difficulty
+        // Priority system for question selection
+        // 1. Wrong questions that need review (highest priority) 
+        // 2. Unseen questions at recommended difficulty
+        // 3. Unseen questions at adjacent difficulties
+        
+        // First, add wrong questions that haven't been solved
+        const wrongButUnsolved = availablePool.filter(q => 
+            wrongQuestionIds.includes(this.getQuestionId(q))
+        );
+        
+        if (wrongButUnsolved.length > 0) {
+            // Add up to half the quiz from wrong questions for review
+            const wrongCount = Math.min(Math.ceil(actualTarget / 2), wrongButUnsolved.length);
+            this.shuffleArray(wrongButUnsolved);
+            selectedQuestions.push(...wrongButUnsolved.slice(0, wrongCount));
+        }
+        
+        // Then add new questions with progressive difficulty
+        let topicIndex = 0;
         let attempts = 0;
-        while (selectedQuestions.length < targetLength && attempts < 100) {
+        
+        while (selectedQuestions.length < actualTarget && attempts < 100) {
             attempts++;
             
-            // Rotate through topics for variety
-            const topic = topics[attempts % topics.length];
+            // Cycle through topics to ensure variety
+            const topic = topics[topicIndex % topics.length];
+            topicIndex++;
+            
+            // Get recommended difficulty for this topic based on performance
             const recommendedDifficulty = this.getRecommendedDifficulty(topic);
             
-            // Get questions for this topic at the recommended difficulty
-            let candidateQuestions = questionsByTopicAndDifficulty[topic][recommendedDifficulty] || [];
+            // Build a priority list of difficulties to try
+            const difficultiesToTry = [recommendedDifficulty];
+            const diffIndex = this.difficultyLevels.indexOf(recommendedDifficulty);
             
-            // If no questions at recommended difficulty, try adjacent difficulties
-            if (candidateQuestions.length === 0) {
-                const diffIndex = this.difficultyLevels.indexOf(recommendedDifficulty);
-                if (diffIndex > 0) {
-                    candidateQuestions = questionsByTopicAndDifficulty[topic][this.difficultyLevels[diffIndex - 1]] || [];
-                }
-                if (candidateQuestions.length === 0 && diffIndex < this.difficultyLevels.length - 1) {
-                    candidateQuestions = questionsByTopicAndDifficulty[topic][this.difficultyLevels[diffIndex + 1]] || [];
-                }
+            // Add adjacent difficulties
+            if (diffIndex > 0) {
+                difficultiesToTry.push(this.difficultyLevels[diffIndex - 1]);
+            }
+            if (diffIndex < this.difficultyLevels.length - 1) {
+                difficultiesToTry.push(this.difficultyLevels[diffIndex + 1]);
             }
             
-            // Filter to prioritize unseen and wrong questions
-            const unseenCandidates = candidateQuestions.filter(q => 
-                !this.solvedQuestions.includes(this.getQuestionId(q)) &&
-                !selectedQuestions.some(sq => sq.question === q.question)
-            );
-            
-            const wrongCandidates = candidateQuestions.filter(q => 
-                wrongQuestionIds.includes(this.getQuestionId(q)) &&
-                !selectedQuestions.some(sq => sq.question === q.question)
-            );
-            
-            // Select a question
+            // Try to find a suitable question
             let selectedQuestion = null;
-            if (unseenCandidates.length > 0) {
-                selectedQuestion = unseenCandidates[Math.floor(Math.random() * unseenCandidates.length)];
-            } else if (wrongCandidates.length > 0) {
-                selectedQuestion = wrongCandidates[Math.floor(Math.random() * wrongCandidates.length)];
-            } else if (candidateQuestions.length > 0) {
-                // Fall back to any question from this topic/difficulty
+            
+            for (const difficulty of difficultiesToTry) {
+                const candidateQuestions = questionsByTopicAndDifficulty[topic]?.[difficulty] || [];
+                
+                // Filter out already selected questions
                 const available = candidateQuestions.filter(q => 
                     !selectedQuestions.some(sq => sq.question === q.question)
                 );
+                
                 if (available.length > 0) {
                     selectedQuestion = available[Math.floor(Math.random() * available.length)];
+                    break;
                 }
             }
             
@@ -1468,20 +1518,56 @@ class QuizApp {
             }
         }
         
-        // If we still need more questions, add from any available
-        if (selectedQuestions.length < targetLength) {
-            const remaining = this.questions.filter(q => 
+        // If we still need more questions, add any remaining available
+        if (selectedQuestions.length < actualTarget) {
+            const remaining = availablePool.filter(q => 
                 !selectedQuestions.some(sq => sq.question === q.question)
             );
             this.shuffleArray(remaining);
-            const needed = targetLength - selectedQuestions.length;
+            const needed = actualTarget - selectedQuestions.length;
             selectedQuestions.push(...remaining.slice(0, needed));
         }
         
-        // Shuffle for variety
+        // Final shuffle for variety in presentation order
         this.shuffleArray(selectedQuestions);
         
+        // Log statistics for debugging
+        console.log(`Selected ${selectedQuestions.length} questions:`, {
+            total: selectedQuestions.length,
+            wrongReview: selectedQuestions.filter(q => wrongQuestionIds.includes(this.getQuestionId(q))).length,
+            new: selectedQuestions.filter(q => !wrongQuestionIds.includes(this.getQuestionId(q))).length,
+            byDifficulty: this.countByDifficulty(selectedQuestions)
+        });
+        
         return selectedQuestions;
+    }
+    
+    countByDifficulty(questions) {
+        const counts = { Easy: 0, Medium: 0, Hard: 0 };
+        questions.forEach(q => {
+            const difficulty = q.difficulty || 'Medium';
+            counts[difficulty]++;
+        });
+        return counts;
+    }
+    
+    showResetButton() {
+        // Show a button to reset progress
+        if (!document.getElementById('resetProgressBtn')) {
+            const resetBtn = document.createElement('button');
+            resetBtn.id = 'resetProgressBtn';
+            resetBtn.className = 'quiz-button';
+            resetBtn.innerHTML = '<span>Reset Progress & Start Fresh</span>';
+            resetBtn.style.marginTop = '20px';
+            resetBtn.addEventListener('click', () => {
+                this.resetProgress();
+                resetBtn.remove();
+                this.startBtn.classList.remove('hidden');
+            });
+            
+            const container = this.startBtn.parentElement;
+            container.appendChild(resetBtn);
+        }
     }
     
     // Progressive difficulty methods
@@ -1497,36 +1583,83 @@ class QuizApp {
     updateTopicPerformance(topic, difficulty, isCorrect) {
         if (!this.topicPerformance[topic]) {
             this.topicPerformance[topic] = {
-                Easy: { correct: 0, total: 0 },
-                Medium: { correct: 0, total: 0 },
-                Hard: { correct: 0, total: 0 },
-                currentLevel: 'Easy'
+                Easy: { correct: 0, total: 0, streak: 0 },
+                Medium: { correct: 0, total: 0, streak: 0 },
+                Hard: { correct: 0, total: 0, streak: 0 },
+                currentLevel: 'Easy',
+                lastAttempt: Date.now(),
+                masteryScore: 0
             };
         }
         
         const perf = this.topicPerformance[topic];
-        perf[difficulty].total++;
+        const difficultyData = perf[difficulty];
+        
+        // Update statistics
+        difficultyData.total++;
         if (isCorrect) {
-            perf[difficulty].correct++;
+            difficultyData.correct++;
+            difficultyData.streak++;
+        } else {
+            difficultyData.streak = 0; // Reset streak on wrong answer
         }
         
-        // Calculate success rate for current difficulty
-        const successRate = perf[difficulty].total > 0 ? 
-            perf[difficulty].correct / perf[difficulty].total : 0;
+        // Update last attempt time
+        perf.lastAttempt = Date.now();
         
-        // Progress to next difficulty if success rate is high enough
-        if (successRate >= this.progressionThreshold && perf[difficulty].total >= 2) {
-            const currentIndex = this.difficultyLevels.indexOf(difficulty);
+        // Calculate success rate for current difficulty
+        const successRate = difficultyData.total > 0 ? 
+            difficultyData.correct / difficultyData.total : 0;
+        
+        // Calculate mastery score (0-100)
+        const easyScore = perf.Easy.total > 0 ? 
+            (perf.Easy.correct / perf.Easy.total) * 0.2 : 0;
+        const mediumScore = perf.Medium.total > 0 ? 
+            (perf.Medium.correct / perf.Medium.total) * 0.3 : 0;
+        const hardScore = perf.Hard.total > 0 ? 
+            (perf.Hard.correct / perf.Hard.total) * 0.5 : 0;
+        perf.masteryScore = Math.round((easyScore + mediumScore + hardScore) * 100);
+        
+        // Progressive difficulty logic with streak consideration
+        const currentIndex = this.difficultyLevels.indexOf(difficulty);
+        
+        // Progress to next difficulty if:
+        // 1. High success rate (>= 75%) with at least 2 attempts
+        // 2. OR streak of 3+ correct answers
+        if ((successRate >= this.progressionThreshold && difficultyData.total >= 2) ||
+            (difficultyData.streak >= 3)) {
             if (currentIndex < this.difficultyLevels.length - 1) {
-                perf.currentLevel = this.difficultyLevels[currentIndex + 1];
+                const nextLevel = this.difficultyLevels[currentIndex + 1];
+                // Only progress if we haven't failed too much at the next level
+                const nextLevelData = perf[nextLevel];
+                const nextSuccessRate = nextLevelData.total > 0 ?
+                    nextLevelData.correct / nextLevelData.total : 1;
+                if (nextSuccessRate >= 0.3 || nextLevelData.total < 2) {
+                    perf.currentLevel = nextLevel;
+                    console.log(`${topic}: Advancing to ${nextLevel} (streak: ${difficultyData.streak})`);
+                }
             }
         }
         
-        // Regress if struggling (below 40% success rate with at least 3 attempts)
-        if (successRate < 0.4 && perf[difficulty].total >= 3) {
-            const currentIndex = this.difficultyLevels.indexOf(difficulty);
+        // Regress if struggling:
+        // 1. Below 40% success rate with at least 3 attempts
+        // 2. OR 3 wrong answers in a row at current difficulty
+        const recentWrong = difficultyData.total - difficultyData.correct;
+        if ((successRate < 0.4 && difficultyData.total >= 3) ||
+            (recentWrong >= 3 && difficultyData.streak === 0)) {
             if (currentIndex > 0) {
                 perf.currentLevel = this.difficultyLevels[currentIndex - 1];
+                console.log(`${topic}: Dropping to ${perf.currentLevel} (success rate: ${(successRate * 100).toFixed(1)}%)`);
+            }
+        }
+        
+        // Time-based difficulty adjustment (if haven't practiced in a while, drop one level)
+        const hoursSinceLastAttempt = (Date.now() - perf.lastAttempt) / (1000 * 60 * 60);
+        if (hoursSinceLastAttempt > 24 && perf.currentLevel !== 'Easy') {
+            const currentLevelIndex = this.difficultyLevels.indexOf(perf.currentLevel);
+            if (currentLevelIndex > 0) {
+                perf.currentLevel = this.difficultyLevels[currentLevelIndex - 1];
+                console.log(`${topic}: Adjusting to ${perf.currentLevel} due to time gap`);
             }
         }
         
@@ -1621,8 +1754,17 @@ class QuizApp {
         // Method to reset all saved progress
         localStorage.removeItem('ap_bio_solved_questions');
         localStorage.removeItem('ap_bio_wrong_questions');
+        localStorage.removeItem('ap_bio_topic_performance');
         this.solvedQuestions = [];
+        this.topicPerformance = {};
         this.addChatMessage('Soobin', 'All progress has been reset! Starting fresh! 🌟');
+        
+        // Refresh the questions pool
+        this.availableQuestions = [];
+        this.currentQuestionIndex = 0;
+        this.score = 0;
+        
+        console.log('Progress reset - all questions are now available again');
     }
 }
 
