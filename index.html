@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study AP Bio with TXT! 💙</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1>Study AP Bio with TXT! 💙</h1>
+                <p class="subtitle">Cellular Respiration Quiz with your favorite idols!</p>
+                <div class="study-info">
+                    <span class="student-name">Hi Claire! 👋</span>
+                    <span class="friends">Study buddies: Lilly, Anya, Sophia</span>
+                </div>
+            </div>
+            <div class="txt-logo">
+                <span>TOMORROW X TOGETHER</span>
+            </div>
+        </header>
+
+        <!-- Chat Container -->
+        <main class="chat-container" id="chatContainer">
+            <!-- Welcome Message -->
+            <div class="chat-message txt-message">
+                <img src="images/26-Kpop-TXT-Members-SOOBIN-Profile.jpg" alt="Soobin" class="member-avatar">
+                <div class="message-content">
+                    <span class="member-name">Soobin</span>
+                    <div class="message-bubble">
+                        <p>안녕하세요 Claire! Welcome to our AP Bio study session! 📚</p>
+                        <p>We're here to help you ace your Cellular Respiration quiz!</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Quiz Controls -->
+        <div class="quiz-controls">
+            <button id="startBtn" class="btn btn-primary">
+                <span>Start Quiz</span>
+                <span class="btn-sparkle">✨</span>
+            </button>
+            <div id="answerSection" class="answer-section hidden">
+                <div class="answer-options" id="answerOptions"></div>
+                <button id="submitBtn" class="btn btn-submit hidden">Submit Answer 💫</button>
+            </div>
+            <button id="nextBtn" class="btn btn-next hidden">Next Question →</button>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-info">
+                <span id="questionNumber">Ready to start!</span>
+                <span id="score">Score: 0</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <!-- Results Modal -->
+        <div id="resultsModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Quiz Complete! 🎉</h2>
+                    <button class="close-modal" id="closeModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="results-summary">
+                        <div class="score-display">
+                            <div class="score-circle" id="scoreCircle">
+                                <span class="score-percent">0%</span>
+                            </div>
+                        </div>
+                        <div class="results-message" id="resultsMessage"></div>
+                        <div class="txt-reactions" id="txtReactions"></div>
+                    </div>
+                    <button id="restartBtn" class="btn btn-primary">Study Again! 📚</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="loading hidden">
+            <div class="loading-spinner"></div>
+            <p>Loading questions...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

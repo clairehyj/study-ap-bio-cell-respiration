@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug CSV Loading</title>
+</head>
+<body>
+    <h1>Debug CSV Loading</h1>
+    <div id="output"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        async function testCSVLoading() {
+            try {
+                output.innerHTML += '<p>Loading questions.csv...</p>';
+                const questionsResponse = await fetch('questions.csv');
+                const questionsText = await questionsResponse.text();
+                output.innerHTML += `<p>✅ Questions CSV loaded: ${questionsText.length} characters</p>`;
+                output.innerHTML += `<p>First 200 chars: <pre>${questionsText.substring(0, 200)}</pre></p>`;
+                
+                output.innerHTML += '<p>Loading messages.csv...</p>';
+                const messagesResponse = await fetch('messages.csv');
+                const messagesText = await messagesResponse.text();
+                output.innerHTML += `<p>✅ Messages CSV loaded: ${messagesText.length} characters</p>`;
+                output.innerHTML += `<p>First 200 chars: <pre>${messagesText.substring(0, 200)}</pre></p>`;
+                
+            } catch (error) {
+                output.innerHTML += `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        testCSVLoading();
+    </script>
+</body>
+</html>
