@@ -1,0 +1,20 @@
+{
+  "name": "study-ap-bio-cell-respiration",
+  "version": "1.0.0",
+  "description": "AP Biology Cellular Respiration Quiz with TXT K-POP Theme",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:responsive": "playwright test test-responsive.js",
+    "test:responsive:headed": "playwright test test-responsive.js --headed",
+    "test:report": "playwright show-report",
+    "start": "python3 start-server.py"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  },
+  "dependencies": {
+    "playwright": "^1.56.1"
+  }
+}

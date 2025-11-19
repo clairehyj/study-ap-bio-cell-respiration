@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Study AP Bio with TXT! 💙</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="study-guide-enhanced.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&display=swap" rel="stylesheet">
@@ -21,47 +22,74 @@
                     <span class="friends">Study buddies: Lilly, Anya, Sophia</span>
                 </div>
             </div>
-            <div class="txt-logo">
-                <span>TOMORROW X TOGETHER</span>
+            <div class="header-actions">
+                <a href="settings.html" class="settings-link" title="Settings">⚙️</a>
+                <div class="txt-logo">
+                    <span>TOMORROW X TOGETHER</span>
+                </div>
             </div>
         </header>
 
-        <!-- Chat Container -->
-        <main class="chat-container" id="chatContainer">
-            <!-- Welcome Message -->
-            <div class="chat-message txt-message">
-                <img src="images/26-Kpop-TXT-Members-SOOBIN-Profile.jpg" alt="Soobin" class="member-avatar">
-                <div class="message-content">
-                    <span class="member-name">Soobin</span>
-                    <div class="message-bubble">
-                        <p>안녕하세요 Claire! Welcome to our AP Bio study session! 📚</p>
-                        <p>We're here to help you ace your Cellular Respiration quiz!</p>
+        <!-- Main Content Area with Split Layout -->
+        <div class="main-content">
+            <!-- Left Side: Chat Container -->
+            <div class="chat-panel">
+                <div class="panel-header">
+                    <h3>💬 Chat with TXT</h3>
+                </div>
+                <div class="chat-container" id="chatContainer">
+                    <!-- Welcome Message -->
+                    <div class="chat-message txt-message">
+                        <img src="images/26-Kpop-TXT-Members-SOOBIN-Profile.jpg" alt="Soobin" class="member-avatar">
+                        <div class="message-content">
+                            <span class="member-name">Soobin</span>
+                            <div class="message-bubble">
+                                <p>안녕하세요 Claire! Welcome to our AP Bio study session! 📚</p>
+                                <p>We're here to help you ace your Cellular Respiration quiz!</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                <!-- Chat Input for asking TXT -->
+                <div class="chat-input-container" id="chatInputContainer">
+                    <input type="text" id="chatInput" placeholder="Ask for help or type 'hint' for a clue..." class="chat-input-field" />
+                    <button id="sendChatBtn" class="btn-send-chat">Send</button>
+                </div>
             </div>
-        </main>
 
-        <!-- Quiz Controls -->
-        <div class="quiz-controls">
-            <button id="startBtn" class="btn btn-primary">
-                <span>Start Quiz</span>
-                <span class="btn-sparkle">✨</span>
-            </button>
-            <div id="answerSection" class="answer-section hidden">
-                <div class="answer-options" id="answerOptions"></div>
-                <button id="submitBtn" class="btn btn-submit hidden">Submit Answer 💫</button>
-            </div>
-            <button id="nextBtn" class="btn btn-next hidden">Next Question →</button>
-        </div>
+            <!-- Right Side: Quiz Panel -->
+            <div class="quiz-panel">
+                <div class="panel-header">
+                    <h3>📝 Quiz Area</h3>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="progress-container">
+                    <div class="progress-info">
+                        <span id="questionNumber">Ready to start!</span>
+                        <span id="score">Score: 0</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
 
-        <!-- Progress Bar -->
-        <div class="progress-container">
-            <div class="progress-info">
-                <span id="questionNumber">Ready to start!</span>
-                <span id="score">Score: 0</span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
+                <!-- Question Display -->
+                <div id="questionDisplay" class="question-display hidden">
+                    <div class="current-question" id="currentQuestion"></div>
+                </div>
+
+                <!-- Quiz Controls -->
+                <div class="quiz-controls">
+                    <button id="startBtn" class="btn btn-primary">
+                        <span>Start Quiz</span>
+                        <span class="btn-sparkle">✨</span>
+                    </button>
+                    <div id="answerSection" class="answer-section hidden">
+                        <div class="answer-options" id="answerOptions"></div>
+                    </div>
+                    <button id="nextBtn" class="btn btn-next hidden">Next Question →</button>
+                </div>
             </div>
         </div>
 
@@ -73,6 +101,16 @@
                     <button class="close-modal" id="closeModal">&times;</button>
                 </div>
                 <div class="modal-body">
+                    <!-- Study Guide Section (Moved to Top) -->
+                    <div id="studyGuide" class="study-guide hidden">
+                        <div class="study-guide-header">
+                            <h3>📚 Topics to Review</h3>
+                            <p class="study-guide-subtitle">Focus on these specific areas:</p>
+                        </div>
+                        <div id="studyTopics" class="study-topics"></div>
+                        <div id="wrongQuestionsList" class="wrong-questions-list"></div>
+                    </div>
+                    
                     <div class="results-summary">
                         <div class="score-display">
                             <div class="score-circle" id="scoreCircle">
@@ -82,6 +120,7 @@
                         <div class="results-message" id="resultsMessage"></div>
                         <div class="txt-reactions" id="txtReactions"></div>
                     </div>
+                    
                     <button id="restartBtn" class="btn btn-primary">Study Again! 📚</button>
                 </div>
             </div>
@@ -94,6 +133,9 @@
         </div>
     </div>
 
+    <script src="ai-service.js"></script>
+    <script src="study-guide-ai.js"></script>
     <script src="script.js"></script>
+    <script src="ai-integration.js"></script>
 </body>
 </html>

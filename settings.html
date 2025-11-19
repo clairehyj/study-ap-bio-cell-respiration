@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Study AP Bio with TXT!</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="settings-container">
+        <header class="settings-header">
+            <a href="index.html" class="back-link">← Back to Quiz</a>
+            <h1>⚙️ Settings</h1>
+        </header>
+
+        <div class="settings-content">
+            <div class="settings-section">
+                <h2>🤖 AI Assistant Configuration</h2>
+                <p class="settings-description">
+                    Enable AI-powered explanations by adding your OpenAI API key. 
+                    This allows you to ask for detailed explanations about questions and answers.
+                </p>
+                
+                <div class="api-key-section">
+                    <label for="apiKey">OpenAI API Key:</label>
+                    <div class="api-key-input-group">
+                        <input 
+                            type="password" 
+                            id="apiKey" 
+                            placeholder="sk-..." 
+                            class="api-key-input"
+                        />
+                        <button id="toggleVisibility" class="toggle-btn" title="Show/Hide API Key">👁️</button>
+                    </div>
+                    <div class="api-key-actions">
+                        <button id="saveApiKey" class="save-btn">💾 Save API Key</button>
+                        <button id="testApiKey" class="test-btn">🧪 Test Connection</button>
+                        <button id="clearApiKey" class="clear-btn">🗑️ Clear API Key</button>
+                    </div>
+                    <div id="apiKeyStatus" class="status-message"></div>
+                </div>
+
+                <div class="api-info">
+                    <h3>How to get an API key:</h3>
+                    <ol>
+                        <li>Go to <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">OpenAI API Keys</a></li>
+                        <li>Sign up or log in to your account</li>
+                        <li>Click "Create new secret key"</li>
+                        <li>Copy the key and paste it above</li>
+                    </ol>
+                    <p class="warning">⚠️ Keep your API key private and secure. Never share it with others!</p>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2>🎨 Appearance</h2>
+                <div class="preference-option">
+                    <label for="themeToggle">
+                        <input type="checkbox" id="themeToggle" />
+                        <span>Dark Mode (Coming Soon)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2>📊 Study Preferences</h2>
+                <div class="preference-option">
+                    <label for="showExplanations">
+                        <input type="checkbox" id="showExplanations" checked />
+                        <span>Show explanations after answering</span>
+                    </label>
+                </div>
+                <div class="preference-option">
+                    <label for="enableAI">
+                        <input type="checkbox" id="enableAI" checked />
+                        <span>Enable AI assistant (requires API key)</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="settings.js"></script>
+</body>
+</html>
